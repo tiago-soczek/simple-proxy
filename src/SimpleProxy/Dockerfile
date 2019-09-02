@@ -3,11 +3,12 @@ WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
-RUN dotnet restore "SimpleProxy.csproj"
-RUN dotnet build "SimpleProxy.csproj" -c Release -o /app
+WORKDIR /src
+COPY . .
+RUN dotnet build -c Release
 
 FROM build AS publish
-RUN dotnet publish "SimpleProxy.csproj" -c Release -o /app
+RUN dotnet publish -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
