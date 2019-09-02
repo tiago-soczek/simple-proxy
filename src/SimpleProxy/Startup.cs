@@ -50,6 +50,14 @@ namespace SimpleProxy
                 {
                     scheme = context.Request.Scheme;
                 }
+                else if (!"http".Equals(scheme) && !"https".Equals(scheme))
+                {
+                    context.Response.StatusCode = 400;
+
+                    await context.Response.WriteAsync("x-scheme: Only 'http' and 'https' schemes are allowed");
+
+                    return;
+                }
 
                 var forwardHost = new HostString(host, port);
 
