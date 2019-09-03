@@ -19,4 +19,5 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     - name: Push image
-      run: docker push tiagosoczek\simple-proxy:$(date +%s) tiagosoczek\simple-proxy:latest
+      run: docker push tiagosoczek\simple-proxy:$(date +%s) 
+      run: docker push tiagosoczek\simple-proxy:latest
