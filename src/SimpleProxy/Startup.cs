@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,7 +21,13 @@ namespace SimpleProxy
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.Run(async (context) =>
+            app.UseWhen(x => x.Request.Headers["x-sql"] == "true", HandleSql);
+            app.UseWhen(x => x.Request.Headers["x-sql"] != "true", HandleHttp);
+        }
+
+        private void HandleHttp(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) =>
             {
                 var host = context.Request.Headers["x-host"];
 
@@ -77,6 +85,73 @@ namespace SimpleProxy
                         context.Response.StatusCode = 500;
                         await context.Response.WriteAsync(e.ToString());
                     }
+                }
+            });
+        }
+
+        private void HandleSql(IApplicationBuilder app)
+        {
+            app.Use(async (context, next) =>
+            {
+                var connectionString = context.Request.Headers["x-connection-string"];
+
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    context.Response.StatusCode = 400;
+
+                    await context.Response.WriteAsync("Provide x-connection-string");
+
+                    return;
+                }
+
+                string commandText = context.Request.Headers["x-command-text"];
+
+                if (string.IsNullOrWhiteSpace(commandText))
+                {
+                    context.Response.StatusCode = 400;
+
+                    await context.Response.WriteAsync("Provide x-command-text (scalar query: SELECT 1)");
+
+                    return;
+                }
+
+                try
+                {
+                    using (var conn = new SqlConnection(connectionString))
+                    {
+                        var sw = Stopwatch.StartNew();
+
+                        await conn.OpenAsync();
+
+                        var openDuration = sw.Elapsed;
+
+                        sw.Restart();
+
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = commandText;
+
+                            var output = await cmd.ExecuteScalarAsync();
+
+                            context.Response.StatusCode = 200;
+
+                            var executeDuration = sw.Elapsed;
+
+                            sw.Stop();
+
+                            await context.Response.WriteAsync($"Output: {output}");
+                            await context.Response.WriteAsync($"Open Connection Duration: {openDuration.TotalMilliseconds}ms");
+                            await context.Response.WriteAsync($"Execute Command Duration: {executeDuration.TotalMilliseconds}ms");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    context.Response.StatusCode = 500;
+
+                    await context.Response.WriteAsync(e.ToString());
+
+                    return;
                 }
             });
         }
