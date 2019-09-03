@@ -15,5 +15,8 @@ jobs:
       run: docker build . --file Dockerfile --tag tiagosoczek\simple-proxy:$(date +%s) --tag tiagosoczek\latest
 
     - uses: actions/docker/login@master
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     - name: Push image
       run: docker push tiagosoczek\simple-proxy:$(date +%s) tiagosoczek\simple-proxy:latest
