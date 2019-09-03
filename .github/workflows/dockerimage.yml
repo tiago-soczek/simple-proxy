@@ -12,13 +12,13 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       working-directory: src/SimpleProxy
-      run: docker build . --file Dockerfile --tag tiagosoczek\simple-proxy:$(date +%s) --tag tiagosoczek\latest
+      run: docker build . --file Dockerfile --tag tiagosoczek\simple-proxy:$(date +%s) --tag tiagosoczek\simple-proxy:latest
 
     - uses: actions/docker/login@master
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Push image (latest)
+      run: docker push tiagosoczek\simple-proxy:latest
     - name: Push image
-      run:
-        docker push tiagosoczek\simple-proxy:$(date +%s) 
-        docker push tiagosoczek\simple-proxy:latest
+      run: docker push tiagosoczek\simple-proxy:$(date +%s)
