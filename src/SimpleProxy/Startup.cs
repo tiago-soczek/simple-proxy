@@ -99,7 +99,7 @@ namespace SimpleProxy
                 {
                     context.Response.StatusCode = 400;
 
-                    await context.Response.WriteAsync("Provide x-connection-string");
+                    await context.Response.WriteAsync("Provide x-connection-string (example: 'Server=tiagso-5510;Database=master;User Id=sa;Password=yourStrong(!)Password;')");
 
                     return;
                 }
@@ -110,7 +110,7 @@ namespace SimpleProxy
                 {
                     context.Response.StatusCode = 400;
 
-                    await context.Response.WriteAsync("Provide x-command-text (scalar query: SELECT 1)");
+                    await context.Response.WriteAsync("Provide x-command-text (scalar query: SELECT @servername)");
 
                     return;
                 }
@@ -139,9 +139,9 @@ namespace SimpleProxy
 
                             sw.Stop();
 
-                            await context.Response.WriteAsync($"Output: {output}");
-                            await context.Response.WriteAsync($"Open Connection Duration: {openDuration.TotalMilliseconds}ms");
-                            await context.Response.WriteAsync($"Execute Command Duration: {executeDuration.TotalMilliseconds}ms");
+                            await context.Response.WriteAsync($@"Output: {output}{Environment.NewLine}");
+                            await context.Response.WriteAsync($"Open Connection Duration: {openDuration.TotalMilliseconds}ms{Environment.NewLine}");
+                            await context.Response.WriteAsync($"Execute Command Duration: {executeDuration.TotalMilliseconds}ms{Environment.NewLine}");
                         }
                     }
                 }
